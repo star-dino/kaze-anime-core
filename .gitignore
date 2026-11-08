@@ -1,0 +1,8 @@
+# 渲染产物与内部开发文档：不进公开 git（成片走 Releases）
+out/
+dist/
+devdocs/
+# 依赖与临时文件
+node_modules/
+*.log
+.DS_Store

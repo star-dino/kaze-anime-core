@@ -1,0 +1,20 @@
+{
+  "name": "anime-core",
+  "version": "0.1.0",
+  "description": "A story-agnostic engine for code-rendered, cel-anime-style shorts (three.js, headless capture, procedural audio). Distilled from Sunshower / LEVIATHAN.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node tools/check.mjs 60",
+    "determinism": "node tools/determinism.mjs",
+    "snap": "node tools/snap.mjs --scale 1 --name star",
+    "model": "node tools/turnaround.mjs --name star --at 0,5.92,-4 --facing 180 --height 3.7 --head 3.0 --exprs open,closed,happy,squint --mouth happy=1,squint=0.6 --sheet dino",
+    "audio": "node tools/render-audio.mjs --name star",
+    "render": "node tools/render.mjs --name star",
+    "player": "node tools/build-player.mjs --video out/star/star.mp4 --out dist/star.html --title 星のかけら",
+    "build": "node tools/render-audio.mjs --name star && node tools/render.mjs --name star && node tools/build-player.mjs --video out/star/star.mp4 --out dist/star.html --title 星のかけら"
+  },
+  "devDependencies": {
+    "puppeteer-core": "23.11.1"
+  }
+}

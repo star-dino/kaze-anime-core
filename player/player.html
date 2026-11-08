@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>%%TITLE%%</title>
+<style>
+  :root { --paper: #fcf3dd; --ink: #22364d; }
+  html, body { margin: 0; height: 100%; background: var(--paper); color: var(--ink); font-family: Georgia, "Noto Serif", serif; overflow: hidden; }
+  #frame { position: fixed; inset: 0; margin: auto; width: min(100vw, calc(100vh * 1.84615)); aspect-ratio: 1920 / 1040; background: #000; box-shadow: 0 28px 70px -24px rgba(34, 70, 110, .35); }
+  video, #poster, #grain { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #poster { object-fit: contain; transition: opacity 1s ease; }
+  #grain { pointer-events: none; opacity: .05; mix-blend-mode: overlay; }
+  #go { position: absolute; left: 50%; bottom: 12%; transform: translateX(-50%); font: inherit; font-size: 18px; color: #fffaf0; background: var(--ink);
+        border: 0; border-radius: 999px; padding: 12px 28px; cursor: pointer; box-shadow: 0 10px 26px -10px rgba(34, 54, 77, .55); }
+  #go[disabled] { opacity: .6; cursor: progress; }
+  h1 { position: absolute; left: 0; right: 0; bottom: 22%; margin: 0; text-align: center; font-weight: 400; font-size: clamp(28px, 6vw, 80px); color: var(--ink);
+       text-shadow: 0 0 18px rgba(255, 250, 240, .9), 0 0 42px rgba(255, 250, 240, .7); transition: opacity .8s; }
+  .gone { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="frame">
+  <video id="v" playsinline preload="auto"></video>
+  <img id="poster" alt="" src="data:image/jpeg;base64,%%POSTER%%">
+  <canvas id="grain" width="480" height="260"></canvas>
+  <h1 id="title">%%TITLE%%</h1>
+  <button id="go" disabled>Loading…</button>
+</div>
+<script type="text/plain" id="reel">%%REEL%%</script>
+<script>
+(function () {
+  var v = document.getElementById('v'), go = document.getElementById('go'), poster = document.getElementById('poster'), title = document.getElementById('title');
+  // base64 → 字节 → Blob URL（分块，页面不卡）
+  function decode(done) {
+    var el = document.getElementById('reel'), s = el.textContent.replace(/\s+/g, ''); el.textContent = '';
+    var CH = 4 << 20, parts = [], i = 0;
+    (function step() {
+      var end = Math.min(s.length, i + CH), bin = atob(s.slice(i, end)), a = new Uint8Array(bin.length);
+      for (var k = 0; k < bin.length; k++) a[k] = bin.charCodeAt(k);
+      parts.push(a); i = end;
+      go.textContent = 'Loading… ' + Math.round(100 * i / s.length) + '%';
+      if (i < s.length) setTimeout(step, 0); else done(URL.createObjectURL(new Blob(parts, { type: 'video/mp4' })));
+    })();
+  }
+  decode(function (url) { v.src = url; go.disabled = false; go.textContent = '▶ Play'; });
+  go.onclick = function () {
+    v.currentTime = 0; v.play();
+    [go, title, poster].forEach(function (e) { e.classList.add('gone'); });
+  };
+  v.onclick = function () { v.paused ? v.play() : v.pause(); };
+  v.onended = function () { go.textContent = '↺ Replay'; go.classList.remove('gone'); };
+  // 播放器端再叠一层“活的”胶片颗粒（视频里的颗粒被编码器抹平了一部分）
+  var g = document.getElementById('grain'), c = g.getContext('2d'), img = c.createImageData(g.width, g.height);
+  (function grain() {
+    for (var p = 0; p < img.data.length; p += 4) { var x = Math.random() * 255; img.data[p] = img.data[p + 1] = img.data[p + 2] = x; img.data[p + 3] = 255; }
+    c.putImageData(img, 0, 0); setTimeout(function () { requestAnimationFrame(grain); }, 60);
+  })();
+})();
+</script>
+</body>
+</html>

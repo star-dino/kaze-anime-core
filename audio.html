@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>anime-core soundtrack</title>
+<style>
+  :root { --bg: #fbf7ee; --ink: #1d2433; --mute: #6b7385; --line: #d9d2c2; --acc: #2a7fb8; --card: #ffffff; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #11141b; --ink: #e8e4da; --mute: #9aa1b0; --line: #2b3140; --acc: #6db7ea; --card: #181c25; } }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 system-ui, sans-serif; }
+  main { max-width: 1000px; margin: 0 auto; padding: 20px 16px 40px; }
+  button { background: var(--acc); color: #fff; border: 0; border-radius: 6px; padding: 7px 14px; font: inherit; cursor: pointer; }
+  canvas { width: 100%; height: 180px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; display: block; margin-top: 12px; }
+  audio { width: 100%; margin: 10px 0; }
+  td { border-top: 1px solid var(--line); padding: 3px 6px; } td.t { color: var(--mute); font-variant-numeric: tabular-nums; width: 70px; }
+</style>
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+</head>
+<body>
+<main>
+  <h1>配乐 / 音效 合成台</h1>
+  <p style="color:var(--mute)">OfflineAudioContext 离线合成，长度精确等于影片时长，时间点全部来自 story 的 CUES。</p>
+  <button id="go">Render</button> <span id="status"></span>
+  <canvas id="wave" width="2000" height="360"></canvas>
+  <audio id="player" controls></audio>
+  <table id="cues"></table>
+</main>
+<script type="module">
+  import { renderSoundtrack } from './src/audio/soundtrack.js';
+  const _name = new URLSearchParams(location.search).get('story');   // 与 index.html 相同：?story=<名字> → src/films/<名字>/story.js
+  const story = _name ? (await import(`./src/films/${_name}/story.js`)).default : (await import('./src/story/story.js')).default;
+  // ?reverb=js → 强制纯 JS 卷积混响（逐位可复现）；?reverb=native → 强制原生 ConvolverNode；不给 → 按 story.audio.reverb（默认 native）
+  const _reverb = new URLSearchParams(location.search).get('reverb');
+  const ropts = _reverb ? { reverb: _reverb } : {};
+
+  // 给 tools/render-audio.mjs 用的无头接口
+  let last = null;
+  const b64 = (u8) => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+  window.AUDIO = {
+    async render() { const msgs = []; last = await renderSoundtrack(story, (m) => msgs.push(m), ropts); last.b64 = b64(last.wav); return { report: last.report, length: last.b64.length, log: msgs, duration: story.duration }; },
+    chunk(i, n) { return last.b64.slice(i, i + n); },
+  };
+  window.AUDIO_READY = true;
+
+  const $ = (id) => document.getElementById(id);
+  $('go').onclick = async () => {
+    $('status').textContent = 'rendering…';
+    const r = await renderSoundtrack(story, (m) => { $('status').textContent = m; }, ropts);
+    const url = URL.createObjectURL(new Blob([r.wav], { type: 'audio/wav' }));
+    $('player').src = url;
+    const cv = $('wave'), g = cv.getContext('2d'), W = cv.width, H = cv.height;
+    g.clearRect(0, 0, W, H); g.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--acc');
+    const step = r.L.length / W;
+    for (let x = 0; x < W; x++) { let m = 0; for (let i = Math.floor(x * step); i < Math.floor((x + 1) * step); i += 8) m = Math.max(m, Math.abs(r.L[i])); g.fillRect(x, H / 2 - m * H * 0.45, 1, m * H * 0.9); }
+    for (const s of story.shots) { g.fillStyle = '#e0663a'; g.fillRect(s.start / story.duration * W, 0, 2, H); }
+    $('cues').innerHTML = r.report.sort((a, b) => a[0] - b[0]).map(([t, l]) => `<tr><td class="t">${t.toFixed(2)} s</td><td>${l}</td></tr>`).join('');
+  };
+</script>
+</body>
+</html>
