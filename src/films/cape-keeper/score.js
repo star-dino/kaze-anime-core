@@ -4,9 +4,9 @@
 //   - 第三幕伸臂挡雨加入温暖大提琴/圆号守护低音；
 //   - 71.2–74.4 s 黑场彻底静默蓄力；
 //   - 第四幕随斜阳与收臂层层推进，在 88.8 s 白花盛放处爆发温暖宽广的弦乐+圆号+木管八度齐奏与竖琴流动琶音高潮。
-import { SR, TAU, mtof, nm, put, SVF, Noise, pad, sing, celloHorn, warmHarp, warmTimpani, airSwell, softDrop } from '../../audio/dsp.js';
+import { SR, TAU, put, SVF, Noise, pad, sing, celloHorn, warmHarp, warmTimpani, airSwell, softDrop } from '../../audio/dsp.js';
 // 温暖声部 sing / celloHorn / warmHarp / warmTimpani / airSwell / softDrop 已下沉到 src/audio/dsp.js（C7）。
-import { Rng, clamp, smooth, invLerp } from '../../core/util.js';
+import { smooth, invLerp } from '../../core/util.js';
 import { wind, rain, FIRST_DROPS } from './weather.js';
 
 

@@ -24,8 +24,6 @@ export const FOLIAGE = {
   hydrangea: 16, vineCurtain: 17, camphor: 18, blossomTree: 19, grassBank: 20, morningGlory: 21,
 };
 
-const INK = '#2a2236';
-
 function canvas(w, h) {
   const c = document.createElement('canvas');
   c.width = w; c.height = h;

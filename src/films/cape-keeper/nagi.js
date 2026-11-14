@@ -6,7 +6,7 @@ import { screen } from '../../core/color.js';
 import { deg, clamp, smooth, invLerp, onTwos, onThrees, noise1, easeHeavy } from '../../core/util.js';
 import { setLamp } from '../../core/look.js';
 import { SPOT, CUES } from './cues.js';
-import { cupAngle, cupOmega, wind, rain, wet, WIND_DIR } from './weather.js';
+import { cupAngle, cupOmega, wind, rain, wet } from './weather.js';
 import { terrain } from './world.js';
 
 // 角色部门：巨型测风机器人「凪」v4 —— 照用户给的设定图（nagi_v4_concept.png，不随仓库分发）建模（正面 + 侧面）。
@@ -546,7 +546,7 @@ function build(M) {
     // 小腿局部坐标换算：以膝关节中心（原图 x=156, y=430）为局部原点，使小腿正交对齐 -Y 轴
     const Lk3 = (x, y, z) => [s * (x - 156), y - 430, z];
 
-    // 1) 单体无缝内/外侧小腿主壳：前下沿平齐高收于 y=156..150（围出宽阔倒梯形拱门缺口），侧翼直落 y=66（侧面完全无缝！）
+    // 1) 单体无缝内/外侧小腿主壳：前下沿平齐高收于 y=156..150（围出宽阔倒梯形拱门缺口），侧翼直落 y=66（侧面完全无缝）
     const ptsShinIn = [
       Lk3(160, 404, 74), Lk3(114, 402, 68), Lk3(66, 390, 24), Lk3(66, 358, -74), Lk3(158, 358, -92),
       Lk3(158, 156, 98), Lk3(100, 150, 92), Lk3(52, 70, 26),  Lk3(54, 70, -136), Lk3(158, 84, -144),
@@ -624,7 +624,7 @@ const EXPR = { rest: 0, open: 1, focus: 2, happy: 3, dim: 4, blink: 5 };
 
 // 统一姿态与护甲随动解算：根据四肢关节角自动驱动侧裙甲、膝甲、脚踝甲、肩甲让位，杜绝穿模卡死
 export function applyPose(rig, P = {}) {
-  const lv = P.louver ?? 1, mode = P.pose ?? 'rest';
+  const mode = P.pose ?? 'rest';
   if (mode === 'keeper') { keeperPose(rig, P); setLouvers(rig, P); return; }
   rig.j.hips.position.set(0, 640, 0);
   rig.rot('hips', [0, 0, 0]);
@@ -771,7 +771,6 @@ export function seatRF(x, z) {
 }
 const seatPt = (out, r, f, h) => { const [x, z] = seatXZ(r, f); return out.set(x, terrain(x, z) + h, z); };
 const seatVec = (out, r, f, h) => { const a = deg(SEAT_YAW); return out.set(-r * Math.cos(a) + f * Math.sin(a), h, r * Math.sin(a) + f * Math.cos(a)); };
-const groundN = (out, x, z, d = 2) => out.set(terrain(x - d, z) - terrain(x + d, z), 2 * d, terrain(x, z - d) - terrain(x, z + d)).normalize();
 // 世界朝向：骨头 -Y 沿 dir，+Z 尽量朝 hint
 function basisQ(out, dir, hint) {
   _by.copy(dir).normalize().negate();
@@ -790,11 +789,11 @@ const eulerDeg = (j) => { _eu.setFromQuaternion(j.quaternion, 'XYZ'); return [_e
 // 脚：foot = [r, f, lift, toeOut, pitch]（脚掌中心贴地点；lift 抬脚高度 m；toeOut 外撇°；pitch 脚尖上翘°）；pole = 膝盖朝向点 [r, f, h]
 // 6 m 见方的大脚放在起伏的地上：脚掌下 9 个点最小二乘拟合一个平面（法线 + 中心高度），不漂也不深插
 function footPlane(x, z, dx, dz) {
-  let n = 0, sx = 0, sz = 0, sy = 0, sxx = 0, szz = 0, sxz = 0, sxy = 0, szy = 0;
+  let n = 0, sy = 0, sxx = 0, szz = 0, sxz = 0, sxy = 0, szy = 0;
   for (const a of [-2.5, 0, 2.5]) for (const b of [-2.7, 0, 2.7]) {
     const px = x + a * dz + b * dx, pz = z - a * dx + b * dz, py = terrain(px, pz);
     const u = px - x, w = pz - z;
-    n++; sx += u; sz += w; sy += py; sxx += u * u; szz += w * w; sxz += u * w; sxy += u * py; szy += w * py;
+    n++; sy += py; sxx += u * u; szz += w * w; sxz += u * w; sxy += u * py; szy += w * py;
   }
   // 对称采样：sx = sz = 0
   const det = sxx * szz - sxz * sxz, bx = (sxy * szz - szy * sxz) / det, bz = (szy * sxx - sxy * sxz) / det;
@@ -945,7 +944,7 @@ function poseTrack(keys, t) {
 export const POSES = (() => {
   const [Fr, Ff] = FLW;   // Fr = 7.60 m, Ff = 3.60 m
   // 石台舒展高坐姿（hy = 278 px ≈ 5.40 m，骨盆底稳落于 2.42 m 崖顶卧石台）：
-  // 右手自然扶靠在石台右外沿（不架在右膝顶上），右腿略内收，彻底腾空“镜头 @lens ↔ 岩缝小花”的双向视线走廊！
+  // 右手自然扶靠在石台右外沿（不架在右膝顶上），右腿略内收，彻底腾空“镜头 @lens ↔ 岩缝小花”的双向视线走廊
   const SIT = {
     hy: 278, fwd: 5, lean: 0, tw: 0,
     fR: [3.85, 8.25, 0, 18, 0], kR: [3.5, 5.4, 5.7],
@@ -992,7 +991,7 @@ export const POSES = (() => {
 
 const BODY = (() => {
   const S = POSES;
-  const [rc0, rc1] = C.reach, st = C.straighten, [rr0, rr1] = C.retractReach;
+  const [rc0] = C.reach, st = C.straighten, [rr0, rr1] = C.retractReach;
   const [g0, g1] = C.guard, [rs0, rs1] = C.rise;
   return [
     [0, S.SIT],

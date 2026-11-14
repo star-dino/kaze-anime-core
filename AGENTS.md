@@ -39,7 +39,11 @@ STORY=<name> node tools/snap.mjs --scale 1 --sheet review s:shot1@0.5 s:shot2@0.
 # 4. Verify pure-function determinism
 STORY=<name> node tools/determinism.mjs 36 100 160
 
-# 5. Render procedural soundtrack & full film (prefix GPU=1 for GPU preview / final renders; never for baseline hashes)
+# 5. Lint (correctness-only) & unit tests (pure modules, no browser)
+npm run lint
+npm test
+
+# 6. Render procedural soundtrack & full film (prefix GPU=1 for GPU preview / final renders; never for baseline hashes)
 STORY=<name> node tools/render-audio.mjs --name <name>
 STORY=<name> node tools/render.mjs --name <name>
 node tools/build-player.mjs --video out/<name>/<name>.mp4 --out dist/<name>.html --title "<Title>"

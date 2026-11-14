@@ -12,9 +12,13 @@
     "audio": "node tools/render-audio.mjs --name star",
     "render": "node tools/render.mjs --name star",
     "player": "node tools/build-player.mjs --video out/star/star.mp4 --out dist/star.html --title 星のかけら",
-    "build": "node tools/render-audio.mjs --name star && node tools/render.mjs --name star && node tools/build-player.mjs --video out/star/star.mp4 --out dist/star.html --title 星のかけら"
+    "build": "node tools/render-audio.mjs --name star && node tools/render.mjs --name star && node tools/build-player.mjs --video out/star/star.mp4 --out dist/star.html --title 星のかけら",
+    "lint": "eslint .",
+    "test": "node --test test/*.test.js"
   },
   "devDependencies": {
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
     "puppeteer-core": "23.11.1"
   }
 }

@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { celMaterial } from '../../core/materials.js';
 import { Rig } from '../../core/kit.js';
 import { SoftBody } from '../../core/organic.js';

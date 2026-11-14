@@ -59,9 +59,7 @@ export function createEyes(o) {
   const root = o.root ?? findRoot(joint);
   root.updateMatrixWorld(true);
   const toJoint = new THREE.Matrix4().copy(joint.matrixWorld).invert().multiply(root.matrixWorld);
-  const toJointN = new THREE.Matrix3().setFromMatrix4(toJoint);
   const J = (p) => p.clone().applyMatrix4(toJoint);
-  const JN = (n) => n.clone().applyMatrix3(toJointN).normalize();
 
   const center = new V(...o.center);
   const ballGeo = surf(sphereFn(R), 32, 24);

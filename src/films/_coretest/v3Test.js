@@ -4,7 +4,7 @@ import { Rig, cbox } from '../../core/kit.js';
 import { cloudTower, skyDome } from '../../core/clouds.js';
 import { MotionArcBatch } from '../../core/fx.js';
 import { screen } from '../../core/color.js';
-import { Rng, clamp, smooth, invLerp, heavyAct, onTwos } from '../../core/util.js';
+import { Rng, smooth, invLerp, heavyAct, onTwos } from '../../core/util.js';
 import { terrain } from '../../story/world.js';
 
 // v3 下沉能力的最小示例（C1 / C2 / C3 / C4 / C5）：

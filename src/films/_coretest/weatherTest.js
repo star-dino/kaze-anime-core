@@ -6,7 +6,7 @@ import { FleckBatch, FLECK, emitStream, dustBurst } from '../../core/fx.js';
 import { WaterStrokeBatch, eaveCurtain, rainSplashes, fallingDrop } from '../../core/rain.js';
 import { integral } from '../../core/secondary.js';
 import { screen } from '../../core/color.js';
-import { smooth, invLerp, onThrees, clamp } from '../../core/util.js';
+import { smooth, invLerp, onThrees } from '../../core/util.js';
 import { terrain } from '../../story/world.js';
 import { SURF_AT } from './surfaceTest.js';
 

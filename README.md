@@ -44,6 +44,8 @@ npm run check          # 加载检查
 npm run snap -- s:hill s:gaze t:4.75 --sheet review
 npm run model          # 角色设定图：转面 + 表情表
 npm run determinism    # 每帧必须是时间的纯函数
+npm run lint           # ESLint 只查正确性（未用变量 / 未定义 / 空 catch 等），无风格规则
+npm test               # node:test 单测：util / secondary / audio dsp（纯函数模块，不开浏览器）
 npm run build          # 配乐 → out/star/*.mp4 → dist/star.html
 ```
 
